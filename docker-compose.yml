@@ -1,0 +1,58 @@
+services:
+  frontend:
+    build:
+      context: ./snist-website-fn
+      dockerfile: Dockerfile
+    container_name: snist-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./snist-website-bn
+      dockerfile: Dockerfile
+    container_name: snist-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGO_URI=${MONGO_URI:-mongodb://mongodb:27017/c3database}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000}
+      - API_KEY=${API_KEY}
+      - EMAIL_USER=${EMAIL_USER}
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - REFRESH_TOKEN=${REFRESH_TOKEN}
+    depends_on:
+      - mongodb
+    restart: always
+    networks:
+      - app-network
+
+  mongodb:
+    image: mongo:7
+    container_name: snist-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
