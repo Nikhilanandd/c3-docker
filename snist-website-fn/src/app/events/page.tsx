@@ -1,0 +1,829 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Calendar, Clock, MapPin, ExternalLink, ChevronRight, Users, Award, Tag, AlertCircle, ArrowRight, Camera, X, Check } from 'lucide-react'
+
+// types 
+interface AgendaItem {
+    time: string;
+    activity: string;
+}
+
+interface Event {
+    id: string;
+    title: string;
+    date: string;
+    time: string;
+    location: string;
+    description: string;
+    image: string;
+    highlights?: string[];
+    gallery?: string[];
+    tags?: string[];
+    registrationLink?: string;
+    registrationDeadline?: string;
+    agenda?: AgendaItem[];
+}
+
+// Past Events Data
+const pastEvents: Event[] = [
+    {
+        id: "1",
+        title: "AI Hack Day 2025",
+        date: "February 22, 2025",
+        time: "9:00 AM - 4:00 PM",
+        location: "Sreenidhi Institute of Science and Technology",
+        description: "Experience the future of technology at AI Hack Day 2025, where innovation meets artificial intelligence. This groundbreaking national hackathon brought together brilliant minds from across the country to tackle real-world challenges using cutting-edge AI solutions. In collaboration with Swecha Telangana, Visam.ai, and IIIT Hyderabad, this event created an ecosystem where students and industry experts collaborated to push the boundaries of what's possible with AI.",
+        image: "/assets/events/ai-hack-day-main.webp",
+        highlights: [
+            "250+ Participants",
+            "80+ Project Submissions",
+            "4 Industry mentors"
+        ],
+        gallery: [
+            "/assets/events/ai-hackday1.webp",
+            "/assets/events/ai-hackday2.webp",
+            "/assets/events/ai-hackday3.webp",
+            "/assets/events/ai-hackday4.webp"
+        ],
+        tags: ["Hackathon", "AI", "Competition"]
+    },
+    {
+        id: "2",
+        title: "C³ Inaugural & Open Session",
+        date: "March 10th, 2025",
+        time: "1:30 PM - 3:30 PM",
+        location: "Sreenidhi Institute of Science and Technology, CET Lab-3",
+        description: "A milestone moment in our journey - the official launch of the Cloud Community Club (C³) at SNIST. This inaugural event marked the beginning of an exciting chapter in our tech community's story. Students discovered a vibrant ecosystem dedicated to Open-source development, cutting-edge Research, Institution-centric Projects, and real-world Deployment experiences. Through engaging presentations and interactive sessions, attendees gained insights into our community's vision and learned how to become an integral part of the C³ ecosystem.",
+        image: "/assets/events/open-session-main.webp",
+        highlights: [
+            "150+ Attendees",
+            "Introduction to Project Schools",
+            "Community Vision Presentation",
+            "Interactive Q&A Session",
+            "Introduction to Research & Development",
+            "Announced Event Calendar"
+        ],
+        gallery: [
+            "/assets/events/open-session-main.webp"
+        ],
+        tags: ["Inaugural", "Community", "Orientation"]
+    },
+    {
+        id: "3",
+        title: "Cloud & DevOps 101",
+        date: "June 16th, 2025",
+        time: "10:00 AM - 3:30 PM IST",
+        location: "Vaughn Seminar Hall, Sreenidhi Institute of Science and Technology",
+        description: "Want to know what 'Cloud' really means and how apps get deployed? This workshop is for you!\n\nJoin us for Cloud 101, a beginner-friendly, hands-on workshop designed to introduce you to the core concepts of Cloud Computing, Linux, Networking, DevOps, and even open-source contribution!\n\nFrom understanding the \"why\" behind cloud, to deploying your first app on AWS, GCP, or Azure, we're here to guide you step by step. Plus, hear about real DevOps job roles, tools, and career paths directly from those in the field!",
+        image: "/assets/events/Cloud 1O1 swecha-1.webp",
+        registrationLink: "https://www.tickettailor.com/events/cloudcommunityclub/1739658",
+        agenda: [
+            { time: "10:00 AM", activity: "Inauguration" },
+            { time: "10:30 AM", activity: "Linux Basics & Networking for Cloud" },
+            { time: "11:45 AM", activity: "DevOps 101: Tools, Culture & Real-World Examples" },
+            { time: "1:00 PM", activity: "Lunch Break" },
+            { time: "2:00 PM", activity: "Hands-on Cloud Deployment: Your First App Live!" },
+            { time: "3:00 PM", activity: "Getting Started with Open Source Contributions" },
+            { time: "3:30 PM", activity: "DevOps Careers & Market Demand" }
+        ],
+        highlights: [
+            "Hands-on Cloud Deployment Experience",
+            "Real DevOps Tools & Practices",
+            "Open Source Contribution Guidance",
+            "Career Path Insights",
+            "Limited Seats for Quality Learning"
+        ],
+        tags: ["Workshop", "Cloud", "DevOps", "Hands-on", "Open Source"]
+    },
+    {
+        id: "4",
+        title: "FREE & OPEN SOURCE DRIVE @ SNIST",
+        date: "September 11th & 12th, 2025",
+        time: "10:00 AM – 4:00 PM",
+        location: "Quadrangle, SNIST",
+        description: "Are you tired of giving away your data to proprietary platforms? Join us to explore Free & Open Source Software (FOSS) – secure, transparent, and community-driven alternatives that put power back in your hands.\n\nWhat's Happening?\n• Live Demos of FOSS Tools\n• Expert Q&A Sessions\n• De-Googlify Your Digital Life (Install secure, privacy-friendly apps)\n• Free Resources to get started\n\nBrought to you by C³ (Cloud Community Club / GLUG SNIST) in collaboration with Swecha. Come, reclaim your digital freedom. Let's build a community that values privacy, openness, and freedom.",
+        image: "/assets/events/foss.webp",
+        highlights: [
+            "Privacy-first alternatives",
+            "Community-driven software",
+            "Hands-on installs and demos",
+            "Collaboration with Swecha"
+        ],
+    },
+    {
+        "id": "5",
+        "title": "Tech Samyog – 3-Day Hands-on Workshop at SNIST",
+        "date": "October 22 - 24, 2025",
+        "time": "10:00 AM - 4:00 PM",
+        "location": "Biotech Seminar Hall, SNIST",
+        "description": "Tech Samyog is a 3-day hands-on workshop organized by (Sree GLUG) Sreenidhi Linux Users Group in collaboration with Cloud Community Club (C³-SNIST). This workshop is designed to help students explore the open-source ecosystem, gain a practical understanding of AI Engineering, and bridge the gap between academia and industry through real-world, project-based learning.\n\nThe sessions are open to students from all departments, with flexible attendance — participants may join any day of interest. However, Day 3 is highly recommended as it includes the final build session, where students apply everything they've learned.",
+        "image": "/assets/events/tech-samyog.webp",
+        "agenda": [
+            { "time": "Day 1", "activity": "Introduction to Git and APIs - Learn version control using Git and explore how APIs power modern applications" },
+            { "time": "Day 2", "activity": "AI Engineering - Understand the fundamentals of Artificial Intelligence, AI agents, LLMs, and real-world AI applications" },
+            { "time": "Day 3", "activity": "Open Source & Linux - Discover the world of FOSS, learn how to raise your first Pull/Merge Request, and get hands-on with GNU Linux essentials" },
+            { "time": "Afternoon Session", "activity": "Build a simple product or project using the concepts learned during the workshop" }
+        ],
+        "highlights": [
+            "Explore emerging technologies including AI, Cloud, Linux, and Open Source",
+            "Learn by doing through interactive, hands-on sessions",
+            "Opportunity to collaborate, contribute, and build a working project",
+            "Open to students from all departments",
+            "Ideal for those preparing for hackathons, research, and industry projects"
+        ],
+        "tags": ["Workshop", "AI", "Open Source", "Linux", "Git", "Hands-on", "APIs", "Agentic AI", "LLMs", "FOSS", "Ollama"]
+    }
+]
+
+// Upcoming Events Data
+const upcomingEvents: Event[] = []
+
+
+// Animation variants
+const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.7,
+            ease: [0.22, 1, 0.36, 1] as [number, number, number, number]
+        }
+    }
+}
+
+const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.15,
+            delayChildren: 0.3
+        }
+    }
+}
+
+const cardHover = {
+    rest: { scale: 1 },
+    hover: {
+        scale: 1.02,
+        transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }
+    }
+}
+
+// Component to display countdown timer
+const CountdownTimer = ({ deadline }: { deadline: string }) => {
+    const calculateTimeLeft = () => {
+        const difference = new Date(deadline).getTime() - new Date().getTime();
+
+        if (difference <= 0) {
+            return {
+                days: 0,
+                hours: 0,
+                minutes: 0,
+                seconds: 0,
+                expired: true
+            };
+        }
+
+        return {
+            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+            minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+            seconds: Math.floor((difference % (1000 * 60)) / 1000),
+            expired: false
+        };
+    };
+
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setTimeLeft(calculateTimeLeft());
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    });
+
+    if (timeLeft.expired) {
+        return (
+            <div className="flex items-center text-amber-500 mt-2 mb-4 bg-amber-500/10 px-4 py-2 rounded-lg border border-amber-500/20">
+                <AlertCircle className="w-5 h-5 mr-2" />
+                <span className="text-sm font-medium">Registration deadline has passed</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col mt-2 mb-4">
+            <div className="text-sm text-gray-400 mb-2 font-medium">Registration closes in:</div>
+            <div className="flex space-x-3 text-sm font-mono">
+                <div className="bg-blue-900/40 px-3 py-2 rounded-lg border border-blue-500/20 shadow-lg shadow-blue-900/20">
+                    <span className="text-white font-bold text-lg">{timeLeft.days}</span>
+                    <span className="text-blue-300 ml-1 text-xs">days</span>
+                </div>
+                <div className="bg-blue-900/40 px-3 py-2 rounded-lg border border-blue-500/20 shadow-lg shadow-blue-900/20">
+                    <span className="text-white font-bold text-lg">{timeLeft.hours}</span>
+                    <span className="text-blue-300 ml-1 text-xs">hours</span>
+                </div>
+                <div className="bg-blue-900/40 px-3 py-2 rounded-lg border border-blue-500/20 shadow-lg shadow-blue-900/20">
+                    <span className="text-white font-bold text-lg">{timeLeft.minutes}</span>
+                    <span className="text-blue-300 ml-1 text-xs">min</span>
+                </div>
+                <div className="bg-blue-900/40 px-3 py-2 rounded-lg border border-blue-500/20 shadow-lg shadow-blue-900/20">
+                    <span className="text-white font-bold text-lg">{timeLeft.seconds}</span>
+                    <span className="text-blue-300 ml-1 text-xs">sec</span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Image Gallery Modal Component
+interface ImageGalleryProps {
+    images: string[];
+    isOpen: boolean;
+    onClose: () => void;
+    currentEventTitle: string;
+}
+
+const ImageGallery = ({ images, isOpen, onClose, currentEventTitle }: ImageGalleryProps) => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!isOpen) return;
+
+            if (e.key === "Escape") onClose();
+            if (e.key === "ArrowRight") setCurrentImageIndex(prev => (prev + 1) % images.length);
+            if (e.key === "ArrowLeft") setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length);
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isOpen, images, onClose]);
+
+    if (!isOpen) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
+        >
+            <div className="relative w-full max-w-5xl h-[80vh] flex flex-col">
+                <div className="absolute top-0 right-0 p-4 z-10">
+                    <button
+                        onClick={onClose}
+                        className="text-white hover:text-gray-300 transition-colors p-2"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div className="text-center mb-4">
+                    <h3 className="text-white text-xl">{currentEventTitle}</h3>
+                    <p className="text-gray-400 text-sm">Image {currentImageIndex + 1} of {images.length}</p>
+                </div>
+
+                <div className="relative flex-grow overflow-hidden rounded-lg">
+                    <motion.div
+                        key={currentImageIndex}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="absolute inset-0"
+                    >
+                        <Image
+                            src={images[currentImageIndex]}
+                            alt={`Gallery image ${currentImageIndex + 1}`}
+                            fill
+                            className="object-contain"
+                        />
+                    </motion.div>
+                </div>
+
+                <div className="mt-4 flex justify-between">
+                    <button
+                        onClick={() => setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length)}
+                        className="bg-gray-800 hover:bg-gray-700 p-2 rounded-full transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <button
+                        onClick={() => setCurrentImageIndex(prev => (prev + 1) % images.length)}
+                        className="bg-gray-800 hover:bg-gray-700 p-2 rounded-full transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
+interface EventDetailsModalProps {
+    event: Event;
+    isOpen: boolean;
+    onClose: () => void;
+    onGalleryOpen: (images: string[], eventTitle: string) => void;
+}
+
+const EventDetailsModal = ({ event, isOpen, onClose, onGalleryOpen }: EventDetailsModalProps) => {
+    if (!isOpen) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={onClose}
+        >
+            <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-gray-900 to-black rounded-xl shadow-2xl border border-gray-800"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Close button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-2 rounded-full bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white transition-colors z-10"
+                >
+                    <X className="w-5 h-5" />
+                </button>
+
+                {/* Event header image */}
+                <div className="relative h-64 md:h-80">
+                    <Image
+                        src={event.image}
+                        alt={event.title}
+                        fill
+                        className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
+                        <h2 className="text-3xl font-bold text-white mb-2">{event.title}</h2>
+                        <div className="flex flex-wrap gap-4 text-gray-300">
+                            <div className="flex items-center">
+                                <Calendar className="w-4 h-4 mr-2 text-blue-400" />
+                                {event.date}
+                            </div>
+                            <div className="flex items-center">
+                                <Clock className="w-4 h-4 mr-2 text-blue-400" />
+                                {event.time}
+                            </div>
+                            <div className="flex items-center">
+                                <MapPin className="w-4 h-4 mr-2 text-blue-400" />
+                                {event.location}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6">
+                    {/* Event tags */}
+                    <div className="flex flex-wrap gap-2 mb-6">
+                        {event.tags && event.tags.map((tag, index) => (
+                            <span
+                                key={index}
+                                className="px-3 py-1 bg-blue-600/20 text-blue-400 text-sm font-medium rounded-full border border-blue-500/30"
+                            >
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+
+                    {/* Description */}
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold text-white mb-4">About the Event</h3>
+                        <p className="text-gray-300 leading-relaxed">{event.description}</p>
+                    </div>
+
+                    {/* Highlights */}
+                    {event.highlights && event.highlights.length > 0 && (
+                        <div className="mb-8">
+                            <h3 className="text-xl font-semibold text-white mb-4">Highlights</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {event.highlights.map((highlight, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-start space-x-3 p-4 bg-gray-800/30 rounded-lg border border-gray-700"
+                                    >
+                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                            <Check className="w-4 h-4 text-blue-400" />
+                                        </div>
+                                        <p className="text-gray-300">{highlight}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Agenda */}
+                    {event.agenda && (
+                        <div className="mb-8">
+                            <h3 className="text-xl font-semibold text-white mb-4">Agenda</h3>
+                            <div className="space-y-4">
+                                {event.agenda.map((item, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-start space-x-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700"
+                                    >
+                                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                            <span className="text-blue-400 font-medium">{index + 1}</span>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-white font-medium mb-1">{item.time}</h4>
+                                            <p className="text-gray-300">{item.activity}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Gallery */}
+                    {event.gallery && event.gallery.length > 0 && (
+                        <div className="mb-8">
+                            <h3 className="text-xl font-semibold text-white mb-4">Gallery</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                {event.gallery.map((image, index) => (
+                                    <div
+                                        key={index}
+                                        className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+                                        onClick={() => onGalleryOpen(event.gallery || [], event.title)}
+                                    >
+                                        <Image
+                                            src={image}
+                                            alt={`Gallery image ${index + 1}`}
+                                            fill
+                                            className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex flex-wrap gap-4 mt-8">
+                        <button
+                            onClick={onClose}
+                            className="inline-flex items-center px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all duration-300"
+                        >
+                            Close
+                            <X className="w-4 h-4 ml-2" />
+                        </button>
+                    </div>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+};
+
+// Client component wrapper
+const EventsClient = () => {
+    const [galleryOpen, setGalleryOpen] = useState(false);
+    const [galleryImages, setGalleryImages] = useState<string[]>([]);
+    const [currentEventTitle, setCurrentEventTitle] = useState("");
+    const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
+    const openGallery = (images: string[], eventTitle: string) => {
+        setGalleryImages(images);
+        setCurrentEventTitle(eventTitle);
+        setGalleryOpen(true);
+    };
+
+    const openEventDetails = (event: Event) => {
+        setSelectedEvent(event);
+    };
+
+    // Smooth scroll function
+    const scrollToSection = (sectionId: string) => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-black via-neutral-900 to-black">
+            {/* Hero Section */}
+            <div className="relative h-[50vh] flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0">
+                    <Image
+                        src="/assets/events/events_bg.webp"
+                        alt="Events Hero"
+                        fill
+                        className="object-cover opacity-70"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/70 to-black" />
+                    <div className="absolute inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] [background-size:16px_16px] opacity-20" />
+                </div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative z-10 text-center px-4 max-w-4xl mx-auto"
+                >
+                    <motion.h1
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        className="text-5xl md:text-6xl font-bold text-white mb-4"
+                    >
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">
+                            C³ Events
+                        </span>
+                    </motion.h1>
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                        className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto font-light"
+                    >
+                        Join us in our journey of learning, innovation, and community building
+                    </motion.p>
+                </motion.div>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-md border-b border-gray-800 py-4 shadow-lg shadow-black/20">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="flex justify-center space-x-4">
+                        <button
+                            onClick={() => setActiveTab('upcoming')}
+                            className={`px-6 py-2 rounded-lg transition-all duration-300 flex items-center ${activeTab === 'upcoming'
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
+                                : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50'
+                                }`}
+                        >
+                            <Calendar className="w-5 h-5 mr-2" />
+                            Upcoming Events
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('past')}
+                            className={`px-6 py-2 rounded-lg transition-all duration-300 flex items-center ${activeTab === 'past'
+                                ? 'bg-gray-700 text-white shadow-lg shadow-gray-900/30'
+                                : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50'
+                                }`}
+                        >
+                            <Clock className="w-5 h-5 mr-2" />
+                            Past Events
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Events Content */}
+            <div className="max-w-7xl mx-auto px-4 py-12">
+                {/* Upcoming Events */}
+                {activeTab === 'upcoming' && (
+                    <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={staggerContainer}
+                        className="space-y-8"
+                    >
+                        {upcomingEvents.length === 0 ? (
+                            <motion.div
+                                variants={fadeInUp}
+                                className="relative text-center py-20 px-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-transparent pointer-events-none" />
+                                <div className="relative z-10 flex flex-col items-center">
+                                    <div className="w-24 h-24 mb-6 rounded-full bg-gradient-to-tr from-blue-900/40 to-cyan-900/40 border border-white/10 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                                        <Calendar className="w-10 h-10 text-cyan-400" />
+                                    </div>
+                                    <h3 className="text-3xl font-bold text-white mb-4">Stay Tuned!</h3>
+                                    <p className="text-neutral-400 max-w-lg mx-auto mb-8 text-lg">
+                                        We're crafting our next big event. Join our community to get instant updates and be part of the conversation.
+                                    </p>
+                                    <a
+                                        href="https://discord.gg/dBNXWDKhrD"
+                                        className="group relative inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all duration-300 shadow-lg shadow-blue-900/30 overflow-hidden"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                                        <span className="font-semibold">Join Discord Community</span>
+                                        <ExternalLink className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                                    </a>
+                                </div>
+                            </motion.div>
+                        ) : (
+                            upcomingEvents.map((event) => (
+                                <motion.div
+                                    key={event.id}
+                                    variants={fadeInUp}
+                                    initial="rest"
+                                    whileHover="hover"
+                                    className="group bg-gradient-to-br from-gray-900/80 to-black backdrop-blur-sm rounded-xl overflow-hidden shadow-xl border border-gray-800 hover:border-blue-500/50 transition-all duration-300"
+                                >
+                                    <motion.div className="md:flex" variants={cardHover}>
+                                        <div className="md:w-2/5 lg:w-1/3 relative h-64 md:h-auto overflow-hidden">
+                                            <Image
+                                                src={event.image}
+                                                alt={event.title}
+                                                fill
+                                                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
+
+                                            {/* Event tags */}
+                                            <div className="absolute top-4 right-4 flex flex-wrap gap-2 justify-end">
+                                                {event.tags && event.tags.map((tag, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="px-3 py-1 bg-blue-600/90 text-white text-xs font-medium rounded-full shadow-lg shadow-blue-900/30"
+                                                    >
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+
+                                            {/* Event date overlay */}
+                                            <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-500/30 shadow-lg shadow-black/30">
+                                                <div className="text-lg font-bold text-white">{event.date.split(' ')[1]}</div>
+                                                <div className="text-xs text-blue-300">{event.date.split(' ')[0]}</div>
+                                            </div>
+                                        </div>
+                                        <div className="p-6 md:w-3/5 lg:w-2/3">
+                                            <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">
+                                                {event.title}
+                                            </h3>
+
+                                            <div className="flex flex-wrap gap-4 mb-4 text-gray-300 text-sm">
+                                                <div className="flex items-center">
+                                                    <Calendar className="w-4 h-4 mr-2 text-blue-400" />
+                                                    {event.date}
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <Clock className="w-4 h-4 mr-2 text-blue-400" />
+                                                    {event.time}
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <MapPin className="w-4 h-4 mr-2 text-blue-400" />
+                                                    {event.location}
+                                                </div>
+                                            </div>
+
+                                            <p className="text-gray-300 mb-4">
+                                                {event.description}
+                                            </p>
+
+                                            {/* Timer */}
+                                            {event.registrationDeadline && (
+                                                <CountdownTimer deadline={event.registrationDeadline} />
+                                            )}
+
+                                            <div className="flex flex-wrap gap-4 mt-4">
+                                                <button
+                                                    onClick={() => openEventDetails(event)}
+                                                    className="inline-flex items-center px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-all duration-300"
+                                                >
+                                                    View Details
+                                                    <ChevronRight className="w-4 h-4 ml-2" />
+                                                </button>
+                                                {event.registrationLink && (
+                                                    <a
+                                                        href={event.registrationLink}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300"
+                                                    >
+                                                        Register Now
+                                                        <ExternalLink className="w-4 h-4 ml-2" />
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </motion.div>
+                            ))
+                        )}
+                    </motion.div>
+                )}
+
+                {/* Past Events */}
+                {activeTab === 'past' && (
+                    <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={staggerContainer}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+                    >
+                        {pastEvents.map((event) => (
+                            <motion.div
+                                key={event.id}
+                                variants={fadeInUp}
+                                initial="rest"
+                                whileHover="hover"
+                                onClick={() => openEventDetails(event)}
+                                className="group relative bg-[#0a0a0a] rounded-2xl overflow-hidden border border-white/5 hover:border-cyan-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(6,182,212,0.1)] cursor-pointer"
+                            >
+                                <motion.div variants={cardHover} className="h-full flex flex-col">
+                                    {/* Image Container */}
+                                    <div className="relative h-56 overflow-hidden">
+                                        <Image
+                                            src={event.image}
+                                            alt={event.title}
+                                            fill
+                                            className="object-cover filter grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-90" />
+
+                                        {/* Date Badge */}
+                                        <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2">
+                                            <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+                                            <span className="text-xs font-mono text-white">{event.date.split(',')[0]}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="p-6 flex-grow flex flex-col relative">
+                                        {/* Glow effect */}
+                                        <div className="absolute -top-10 left-0 right-0 h-20 bg-gradient-to-b from-black to-transparent pointer-events-none" />
+
+                                        <h3 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors line-clamp-2">
+                                            {event.title}
+                                        </h3>
+
+                                        <div className="flex items-center text-neutral-400 text-xs mb-4 gap-4">
+                                            <div className="flex items-center">
+                                                <Clock className="w-3.5 h-3.5 mr-1.5 text-cyan-600" />
+                                                {event.time.split('-')[0]}
+                                            </div>
+                                            <div className="flex items-center">
+                                                <MapPin className="w-3.5 h-3.5 mr-1.5 text-cyan-600" />
+                                                <span className="truncate max-w-[120px]">SNIST</span>
+                                            </div>
+                                        </div>
+
+                                        <p className="text-neutral-500 mb-6 text-sm line-clamp-3 leading-relaxed">
+                                            {event.description}
+                                        </p>
+
+                                        {/* Footer tags */}
+                                        <div className="mt-auto flex flex-wrap gap-2">
+                                            {event.tags && event.tags.slice(0, 3).map((tag, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-[10px] uppercase tracking-wider font-semibold rounded-md border border-white/5 transition-colors"
+                                                >
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                )}
+
+            </div>
+
+            {/* Gallery Modal */}
+            <ImageGallery
+                images={galleryImages}
+                isOpen={galleryOpen}
+                onClose={() => setGalleryOpen(false)}
+                currentEventTitle={currentEventTitle}
+            />
+
+            {/* EventDetailsModal */}
+            {selectedEvent && (
+                <EventDetailsModal
+                    event={selectedEvent}
+                    isOpen={!!selectedEvent}
+                    onClose={() => setSelectedEvent(null)}
+                    onGalleryOpen={openGallery}
+                />
+            )}
+        </div>
+    );
+};
+
+// Server component
+export default function Events() {
+    return <EventsClient />
+} 
